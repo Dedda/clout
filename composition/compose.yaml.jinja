@@ -1,0 +1,58 @@
+{# volumes: #}
+{#  #}
+services:
+  nextcloud:
+    container_name: "clout_nextcloud"
+    image: nextcloud:latest
+    depends_on:
+      - db
+    ports:
+      - "{{ nextcloud['port'] if nextcloud['port'] is not none else 80 }}:80"
+    volumes:
+      - "{{ nextcloud['root_dir'] }}/html:/var/www/html"
+      {# - "{{ nextcloud['root_dir'] }}/apps:/var/www/html/custom_apps"
+      - "{{ nextcloud['root_dir'] }}/config:/var/www/html/config"
+      - "{{ nextcloud['data_dir'] }}:/var/www/html/data"
+      - "{{ nextcloud['root_dir'] }}/themes:/var/www/html/themes"
+      - "{{ nextcloud['root_dir'] }}/logs:/var/log" #}
+    environment:
+      - PHP_MEMORY_LIMIT={{ nextcloud['memory_limit'] }}
+      - PHP_UPLOAD_LIMIT={{ nextcloud['upload_limit'] }}
+    networks:
+      - pub
+      - priv
+    restart: always
+
+  db:
+    container_name: "clout_postgres"
+    image: postgres:latest
+    ports:
+      - "{{ postgres['port'] if postgres['port'] is not none else 5433 }}:5432"
+    volumes:
+      - "{{ postgres['data_dir'] }}:/var/lib/postgresql/data"
+    environment:
+      - POSTGRES_PASSWORD={{ postgres['password'] }}
+      - PGDATA=/var/lib/postgresql/data
+    networks:
+      - priv
+    restart: always
+  
+  nginx_proxy:
+    container_name: "clout_nginx_proxy"
+    image: "docker.io/jc21/nginx-proxy-manager:latest"
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "81:81"
+      - "443:443"
+    volumes:
+      - "{{ nginx['data'] }}:/data"
+      - "{{ nginx['letsencrypt'] }}:/etc/letsencrypt"
+
+networks:
+  priv:
+    name: "clout_private"
+    driver: bridge
+  pub:
+    name: "clout_public"
+    driver: bridge

@@ -1,0 +1,13 @@
+nextcloud:
+  port: 8081
+  root_dir: /home/clout/nextcloud
+  # data_dir: /home/clout/data
+  memory_limit: 4096M
+  upload_limit: 102400M
+postgres:
+  port: 5432
+  data_dir: /home/clout/postgres
+  password: test123
+nginx:
+  data: /home/clout/nginx
+  letsencrypt: /home/clout/letsencrypt
